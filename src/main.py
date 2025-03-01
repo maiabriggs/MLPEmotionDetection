@@ -15,7 +15,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from PIL import Image
 import glob
-
 import difflib
 
 def find_closest_match(base_name, image_dict):
@@ -46,7 +45,8 @@ class TIFDataset(Dataset):
         return matched_images
         
     def __len__(self):
-        return len(self.labels_df)
+        # Use the length of the matched images list instead of the original dataframe
+        return len(self.image_map)
     
     def __getitem__(self, idx):
         img_path, label = self.image_map[idx]
@@ -60,7 +60,7 @@ class TIFDataset(Dataset):
 def get_data_loaders(dataset_path, batch_size=64):
     labels_file = os.path.join(dataset_path, "TIF_labels.xlsx")
     image_dir = os.path.join(dataset_path, "images")
-    labels_df = pd.read_excel(labels_file) # check its an excel file
+    labels_df = pd.read_excel(labels_file)
     
     label_encoder = LabelEncoder()
     labels_df["label"] = label_encoder.fit_transform(labels_df.iloc[:, 1])
@@ -186,7 +186,8 @@ def main():
     os.makedirs(args.output_dir, exist_ok=True)
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    train_loader, val_loader = get_data_loaders(args.dataset_path, args.batch_size)
+    # Unpack all returned values from get_data_loaders
+    train_loader, val_loader, test_loader, label_encoder = get_data_loaders(args.dataset_path, args.batch_size)
     
     model = models.resnet18(weights=None)
     model.fc = nn.Linear(model.fc.in_features, 7)  # Modify output layer for 7 classes
@@ -198,6 +199,10 @@ def main():
     model_save_path = os.path.join(args.output_dir, f"{args.dataset_name}_resnet18.pth")
     torch.save(model.state_dict(), model_save_path)
     print(f"Model saved as {model_save_path}")
+    
+    # Optional: Evaluate on the test set after training
+    test_acc, test_loss = evaluate(model, test_loader, nn.CrossEntropyLoss(), device)
+    print(f"Test Accuracy: {test_acc:.2f}%, Test Loss: {test_loss:.4f}")
 
 if __name__ == "__main__":
     main()
