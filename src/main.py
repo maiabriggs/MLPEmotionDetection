@@ -111,7 +111,7 @@ def train(model, train_loader, val_loader, device, output_dir, epochs=10):
                 correct += (predicted == labels).sum().item()
             
             train_acc = 100 * correct / total
-            val_acc, val_loss = evaluate(model, val_loader, criterion, device)
+            val_acc, val_loss, _, _= evaluate(model, val_loader, criterion, device)
             
             train_losses.append(running_loss / len(train_loader))
             val_losses.append(val_loss)
