@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=emotion_training
-#SBATCH --output=/home/%u/logs/%x_%j.out  # Log file in user-specific directory
-#SBATCH --error=/home/%u/logs/%x_%j.err   # Error file
+#SBATCH --output=/home/%u/git/MLPEmotionDetection/logs/%x_%j.out  # Log file in user-specific directory
+#SBATCH --error=/home/%u/git/MLPEmotionDetection/logs/%x_%j.err   # Error file
 #SBATCH --time=04:00:00                   # Time limit
 #SBATCH --mem=8000                        # Memory allocation (8GB)
 #SBATCH --cpus-per-task=2                 # Number of CPUs
