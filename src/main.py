@@ -133,6 +133,7 @@ def train(model, train_loader, val_loader, device, output_dir, epochs=10):
     
     # Plot accuracy and loss curves
     plot_training_curves(metrics, output_dir)
+    return metrics
 
 def evaluate(model, loader, criterion, device):
     model.eval()
@@ -155,7 +156,7 @@ def evaluate(model, loader, criterion, device):
     
     val_acc = 100 * correct / total
     avg_loss = running_loss / len(loader)
-    return val_acc, avg_loss
+    return val_acc, avg_loss, np.array(all_preds), np.array(all_labels)
 
 def plot_training_curves(metrics, output_dir):
     plt.figure()
@@ -172,6 +173,30 @@ def plot_training_curves(metrics, output_dir):
     plt.legend()
     plt.title("Accuracy Curves")
     plt.savefig(os.path.join(output_dir, "accuracy_curves.jpg"))
+    plt.close()
+
+def plot_confusion_matrix(cm, classes, output_dir, title='Confusion matrix', cmap=plt.cm.Blues):
+    plt.figure(figsize=(10, 8))
+    plt.imshow(cm, interpolation='nearest', cmap=cmap)
+    plt.title(title)
+    plt.colorbar()
+    
+    tick_marks = np.arange(len(classes))
+    plt.xticks(tick_marks, classes, rotation=45)
+    plt.yticks(tick_marks, classes)
+    
+    fmt = 'd'
+    thresh = cm.max() / 2.
+    for i in range(cm.shape[0]):
+        for j in range(cm.shape[1]):
+            plt.text(j, i, format(cm[i, j], fmt),
+                     horizontalalignment="center",
+                     color="white" if cm[i, j] > thresh else "black")
+    
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+    plt.tight_layout()
+    plt.savefig(os.path.join(output_dir, "confusion_matrix.jpg"))
     plt.close()
 
 def main():
@@ -194,15 +219,16 @@ def main():
     model = model.to(device)
     
     print(f"Training ResNet-18 on {args.dataset_name} dataset...")
-    train(model, train_loader, val_loader, device, args.output_dir, args.epochs)
+    metrics = train(model, train_loader, val_loader, device, args.output_dir, args.epochs)
     
     model_save_path = os.path.join(args.output_dir, f"{args.dataset_name}_resnet18.pth")
     torch.save(model.state_dict(), model_save_path)
     print(f"Model saved as {model_save_path}")
     
-    # Optional: Evaluate on the test set after training
-    test_acc, test_loss = evaluate(model, test_loader, nn.CrossEntropyLoss(), device)
+    test_acc, test_loss, test_preds, test_labels = evaluate(model, test_loader, nn.CrossEntropyLoss(), device)
     print(f"Test Accuracy: {test_acc:.2f}%, Test Loss: {test_loss:.4f}")
+    cm = confusion_matrix(test_labels, test_preds)
+    plot_confusion_matrix(cm, label_encoder.classes_, args.output_dir)
 
 if __name__ == "__main__":
     main()
