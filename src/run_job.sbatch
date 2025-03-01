@@ -45,7 +45,7 @@ rsync --archive --update --compress --progress --exclude='/afs' --exclude='/proc
 echo "Data copied to scratch disk."
 
 # Run the Python script
-python /home/%u/projects/main.py \
+python /home/s2186747/git/MLPEmotionDetection/src/main.py \
     --dataset_name "$DATASET_NAME" \
     --dataset_path "$SCRATCH_DATA_DIR" \
     --output_dir "$SCRATCH_OUTPUT_DIR" \
