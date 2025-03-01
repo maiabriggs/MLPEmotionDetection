@@ -23,7 +23,7 @@ def find_closest_match(base_name, image_dict):
     closest_match = difflib.get_close_matches(base_name, possible_matches, n=1, cutoff=0.6)
     return image_dict[closest_match[0]] if closest_match else None
 
-class EmotionDataset(Dataset):
+class TIFDataset(Dataset):
     def __init__(self, image_dir, labels_df, transform=None):
         self.image_dir = image_dir
         self.labels_df = labels_df
@@ -74,9 +74,9 @@ def get_data_loaders(dataset_path, batch_size=64):
         transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
     ])
     
-    train_dataset = EmotionDataset(image_dir, train_df, transform=transform)
-    val_dataset = EmotionDataset(image_dir, val_df, transform=transform)
-    test_dataset = EmotionDataset(image_dir, test_df, transform=transform)
+    train_dataset = TIFDataset(image_dir, train_df, transform=transform)
+    val_dataset = TIFDataset(image_dir, val_df, transform=transform)
+    test_dataset = TIFDataset(image_dir, test_df, transform=transform)
     
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=4)
