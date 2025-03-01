@@ -41,7 +41,7 @@ class TIFDataset(Dataset):
             matched_img = find_closest_match(base_name, image_dict)
     
             if matched_img:
-                matched_images.append((matched_img, row["encoded_label"]))
+                matched_images.append((matched_img, row["label"]))
     
         return matched_images
         
