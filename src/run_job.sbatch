@@ -20,7 +20,7 @@ conda activate mlp
 
 # Arguments
 DATASET_NAME="TIF"
-SOURCE_DATA_DIR="/home/s2186747/TIF"
+SOURCE_DATA_DIR="/home/s2186747/data/TIF"
 EPOCHS=20
 BATCH_SIZE=64
 
