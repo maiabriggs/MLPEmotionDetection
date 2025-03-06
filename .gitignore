@@ -1,2 +1,4 @@
-datasets/AffectNet/images/
-datasets/AffectNet/AffectNet.zip
+datasets/AffectNet/
+logs/
+*.pth
+metrics.pkl
