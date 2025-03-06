@@ -1,1 +1,4 @@
 datasets/AffectNet/
+logs/
+*.pth
+metrics.pkl
