@@ -1,4 +1,6 @@
 datasets/AffectNet/
+datasets/TIF_DB/
 logs/
 *.pth
 metrics.pkl
+output/class-test/
