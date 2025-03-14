@@ -1,6 +1,6 @@
 import tensorflow as tf
 from collections import Counter
-from imblearn.over_sampling import SMOTE
+from imblearn.over_sampling import SMOTE, SVMSMOTE
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -32,7 +32,6 @@ class Class_Balancer():
         for image, label in data:
             self.images.append(image)
             self.labels.append(label)
-            
     
     """
     Takes array of images and labels and runs SMOTE on them, returns data in the form:
@@ -72,12 +71,47 @@ class Class_Balancer():
         return resampled_data
     
     
+    def svm_smote_balancer(self):
+        X = []
+        y = []
+        original_shape = self.images[0].shape
+        for image, label in self.data:
+            X.append(image.numpy().flatten())  
+            y.append(label)
         
+        X = np.array(X)
+        y = np.array(y)
+        print("Class distribution before SMOTE: ", Counter(y))
+        smote = SVMSMOTE(sampling_strategy='auto', random_state=42, k_neighbors=3)
+        X_resampled, y_resampled = smote.fit_resample(X, y)
+        print("Class distribution after SMOTE: ", Counter(y_resampled))
+        
+        resampled_data = []
+        for img, label in zip(X_resampled, y_resampled):
+            img = img.reshape(original_shape)
+            img_tensor = torch.tensor(img, dtype=torch.float32)
+            
+            if self.transform:
+                img_tensor = img_tensor.squeeze() 
+                img_array = img_tensor.permute(1, 2, 0).cpu().numpy() if img_tensor.ndim == 3 else img_tensor.cpu().numpy()
+                img_array = (img_array * 255).astype(np.uint8)  
+                img = Image.fromarray(img_array)  
+                img_tensor = self.transform(img)  
+
+            label_tensor = torch.tensor(label, dtype=torch.long)
+            resampled_data.append([img_tensor, label_tensor])
+        
+        return resampled_data
+        
+        
+    
+    
+    # def sgbdt_balancer(self):
+    #     #Aggregating candidate splits
         
         
             
         
-        
-        
+         
     
     
