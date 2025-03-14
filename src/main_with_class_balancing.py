@@ -93,7 +93,12 @@ def get_data_loaders(dataset_path, batch_size=64):
     #Balance classes
     train_data = [(img, label) for img, label in train_dataset]
     balancer = cb.Class_Balancer(train_data, transform=transform)
-    balanced_train_data = balancer.smote_balancer()
+    
+    #Pick Balancer
+    # balanced_train_data = balancer.smote_balancer()
+    balanced_train_data = balancer.svm_smote_balancer()
+    
+    
     balanced_train_dataset = BalancedDataset(balanced_train_data)
     
     train_loader = DataLoader(balanced_train_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
