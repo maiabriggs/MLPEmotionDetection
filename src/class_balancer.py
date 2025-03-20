@@ -1,6 +1,6 @@
 import tensorflow as tf
 from collections import Counter
-from imblearn.over_sampling import SMOTE, SVMSMOTE
+from imblearn.over_sampling import SMOTE, SVMSMOTE, BorderlineSMOTE
 import xgboost as xgb
 import torch
 import torch.nn as nn
@@ -106,8 +106,6 @@ class Class_Balancer():
         
         return resampled_data
         
-        
-    
     
     def sgbdt_balancer(self):
         X = []
@@ -163,37 +161,37 @@ class Class_Balancer():
         
         return resampled_data
     
-    def augment_classes(self, target_ratio=1.0):
-        class_counts = Counter(self.labels)
-        max_class = max(class_counts.values())
-        target_count = int(target_ratio * max_class)  # Target count for balancing
+    def borderline_smote_balancer(self):
+        X = []
+        y = []
+        original_shape = self.images[0].shape
+        for image, label in self.data:
+            X.append(image.numpy().flatten())  
+            y.append(label)
+        
+        X = np.array(X)
+        y = np.array(y)
+        print("Class distribution before SMOTE: ", Counter(y))
+        smote = BorderlineSMOTE(sampling_strategy='minority', random_state=31, k_neighbors=3)
+        X_resampled, y_resampled = smote.fit_resample(X, y)
+        print("Class distribution after SMOTE: ", Counter(y_resampled))
+        
+        resampled_data = []
+        for img, label in zip(X_resampled, y_resampled):
+            img = img.reshape(original_shape)
+            img_tensor = torch.tensor(img, dtype=torch.float32)
+            
+            if self.transform:
+                img_tensor = img_tensor.squeeze() 
+                img_array = img_tensor.permute(1, 2, 0).cpu().numpy() if img_tensor.ndim == 3 else img_tensor.cpu().numpy()
+                img_array = (img_array * 255).astype(np.uint8)  
+                img = Image.fromarray(img_array)  
+                img_tensor = self.transform(img)  
 
-        augmentation_transform = transforms.Compose([
-            transforms.RandomHorizontalFlip(),
-            transforms.RandomRotation(15),
-            transforms.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.3, hue=0.1),
-            transforms.RandomAffine(degrees=0, translate=(0.1, 0.1)),  # Small random shifts
-            transforms.RandomPerspective(distortion_scale=0.2, p=0.5),
-            transforms.ToTensor()
-        ])
-
-        augmented_data = self.data.copy()
-
-        for class_label, count in class_counts.items():
-            if count < target_count:
-                num_to_add = target_count - count
-                class_images = [img for img, label in self.data if label == class_label]
-
-                for _ in range(num_to_add):
-                    img = random.choice(class_images)
-                    img_pil = transforms.ToPILImage()(img)
-                    aug_img = augmentation_transform(img_pil)
-
-                    label_tensor = torch.tensor(class_label, dtype=torch.long)
-                    augmented_data.append([aug_img, label_tensor])
-
-        print("Class distribution after augmentation:", Counter([label for _, label in augmented_data]))
-        return augmented_data
+            label_tensor = torch.tensor(label, dtype=torch.long)
+            resampled_data.append([img_tensor, label_tensor])
+        
+        return resampled_data
 
             
         
