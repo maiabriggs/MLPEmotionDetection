@@ -106,11 +106,14 @@ def get_data_loaders(dataset_path, batch_size=64):
     balancer = cb.Class_Balancer(train_data, transform=train_transform)
 
     # Pick Balancer
-    balanced_train_data = balancer.smote_balancer()
+    # balanced_train_data = balancer.smote_balancer()
     # balanced_train_data = balancer.svm_smote_balancer()
     # balanced_train_data = balancer.sgbdt_balancer()
+    balanced_train_data = balancer.augment_minority_classes(target_ratio=1.0)
 
     balanced_train_dataset = BalancedDataset(balanced_train_data)
+
+
 
     train_loader = DataLoader(balanced_train_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=4)

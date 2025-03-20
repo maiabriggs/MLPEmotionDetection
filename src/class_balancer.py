@@ -22,6 +22,7 @@ from sklearn.preprocessing import LabelEncoder
 from PIL import Image
 import glob
 import difflib
+import random
 
 
 #Data is in format [[img, label], [img, label], ...]
@@ -161,6 +162,38 @@ class Class_Balancer():
             resampled_data.append([img_tensor, label_tensor])  
         
         return resampled_data
+    
+    def augment_classes(self, target_ratio=1.0):
+        class_counts = Counter(self.labels)
+        max_class = max(class_counts.values())
+        target_count = int(target_ratio * max_class)  # Target count for balancing
+
+        augmentation_transform = transforms.Compose([
+            transforms.RandomHorizontalFlip(),
+            transforms.RandomRotation(15),
+            transforms.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.3, hue=0.1),
+            transforms.RandomAffine(degrees=0, translate=(0.1, 0.1)),  # Small random shifts
+            transforms.RandomPerspective(distortion_scale=0.2, p=0.5),
+            transforms.ToTensor()
+        ])
+
+        augmented_data = self.data.copy()
+
+        for class_label, count in class_counts.items():
+            if count < target_count:
+                num_to_add = target_count - count
+                class_images = [img for img, label in self.data if label == class_label]
+
+                for _ in range(num_to_add):
+                    img = random.choice(class_images)
+                    img_pil = transforms.ToPILImage()(img)
+                    aug_img = augmentation_transform(img_pil)
+
+                    label_tensor = torch.tensor(class_label, dtype=torch.long)
+                    augmented_data.append([aug_img, label_tensor])
+
+        print("Class distribution after augmentation:", Counter([label for _, label in augmented_data]))
+        return augmented_data
 
             
         
