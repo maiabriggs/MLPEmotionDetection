@@ -96,7 +96,8 @@ def get_data_loaders(dataset_path, batch_size=64):
     
     #Pick Balancer
     # balanced_train_data = balancer.smote_balancer()
-    balanced_train_data = balancer.svm_smote_balancer()
+    # balanced_train_data = balancer.svm_smote_balancer()
+    balanced_train_data = balancer.sgbdt_balancer()
     
     
     balanced_train_dataset = BalancedDataset(balanced_train_data)
