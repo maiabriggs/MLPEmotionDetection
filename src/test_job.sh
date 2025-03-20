@@ -22,7 +22,14 @@ OUTPUT_DIR="${BASE_OUTPUT_DIR}/${OUTPUT_NAME}"
 mkdir -p "$OUTPUT_DIR"
 echo "Outputs will be saved to: $OUTPUT_DIR"
 
-# Run the Python script
+#Run the Python script
+python3 /home/maia/Documents/MLP/mlp-cw3/MLPEmotionDetection/src/main.py \
+    --dataset_name "$DATASET_NAME" \
+    --dataset_path "$SOURCE_DATA_DIR" \
+    --output_dir "$OUTPUT_DIR" \
+    --epochs "$EPOCHS" \
+    --batch_size "$BATCH_SIZE"
+
 python3 /home/maia/Documents/MLP/mlp-cw3/MLPEmotionDetection/src/main_with_class_balancing.py \
     --dataset_name "$DATASET_NAME" \
     --dataset_path "$SOURCE_DATA_DIR" \

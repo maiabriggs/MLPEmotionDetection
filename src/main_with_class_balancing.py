@@ -86,19 +86,30 @@ def get_data_loaders(dataset_path, batch_size=64):
         transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
     ])
     
+    # Data Augmentation for Training
+    train_transform = transforms.Compose([
+        transforms.Resize((48, 48)),
+        transforms.RandomHorizontalFlip(),  # Randomly flip images horizontally
+        transforms.RandomRotation(10),     # Randomly rotate images by up to 10 degrees
+        transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),  # Randomly adjust brightness, contrast, etc.
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
+    ])
+    
     train_dataset = TIFDataset(image_dir, train_df, transform=transform)
     val_dataset = TIFDataset(image_dir, val_df, transform=transform)
     test_dataset = TIFDataset(image_dir, test_df, transform=transform)
     
-    #Balance classes
+    # Balance classes
     train_data = [(img, label) for img, label in train_dataset]
     balancer = cb.Class_Balancer(train_data, transform=transform)
-    
-    #Pick Balancer
-    # balanced_train_data = balancer.smote_balancer()
-    balanced_train_data = balancer.svm_smote_balancer()
-    
-    
+
+    # Pick Balancer
+    balanced_train_data = balancer.smote_balancer()
+    # balanced_train_data = balancer.svm_smote_balancer()
+    # balanced_train_data = balancer.sgbdt_balancer()
+    # balanced_train_data = balancer.borderline_smote_balancer()
+
     balanced_train_dataset = BalancedDataset(balanced_train_data)
     
     train_loader = DataLoader(balanced_train_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
